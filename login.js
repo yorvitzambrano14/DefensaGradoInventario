@@ -1,106 +1,61 @@
-document.addEventListener("DOMContentLoaded", () => {
+// 🚀 LOGIN SCRIPT - CORREGIDO
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const btnText = document.getElementById('btnText');
+    const loading = document.getElementById('loading');
+    const btn = form.querySelector('.login-btn');
 
-    const loginForm = document.getElementById("loginForm");
-    const usernameInput = document.getElementById("username");
-    const passwordInput = document.getElementById("password");
-    const errorMessage = document.getElementById("errorMessage");
+    // ✅ CREDENCIALES - CAMBIA AQUÍ
+    const CREDENTIALS = {
+        username: 'empresa',
+        password: 'empresa1'
+    };
 
-    const submitBtn = document.getElementById("submitBtn");
-    const btnText = submitBtn.querySelector(".btn-text");
-    const loadingSpinner = document.getElementById("loadingSpinner");
-
-    loginForm.addEventListener("submit", async (e) => {
-
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
-
-        hideError();
-
-        const username = usernameInput.value.trim();
-        const password = passwordInput.value.trim();
-
+        
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        
         if (!username || !password) {
-            showError("Por favor completa todos los campos.");
+            showError('Completa todos los campos');
             return;
         }
-
-        setLoadingState(true);
-
-        try {
-
-            await simulateApiCall(username, password);
-
-            // Guardar sesión
-            localStorage.setItem("logueado", "true");
-            localStorage.setItem("usuario", username);
-
-            // Esperar un pequeño instante
-            setTimeout(() => {
-                window.location.replace("index.html");
-            }, 300);
-
-        } catch (error) {
-
-            showError(error.message);
-
-            setLoadingState(false);
-
-        }
-
+        
+        btn.disabled = true;
+        btnText.textContent = 'Validando...';
+        loading.style.display = 'block';
+        
+        setTimeout(() => {
+            if (username === CREDENTIALS.username && password === CREDENTIALS.password) {
+                // ✅ LOGIN EXITOSO - NUEVA CLAVE
+                localStorage.setItem('inventory_session', Date.now().toString());
+                window.location.href = 'index.html';
+            } else {
+                showError('❌ Usuario o contraseña incorrectos');
+            }
+            
+            btn.disabled = false;
+            btnText.textContent = '🚀 Iniciar Sesión';
+            loading.style.display = 'none';
+        }, 1500);
     });
 
     function showError(message) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = "block";
+        errorMsg.textContent = message;
+        errorMsg.style.display = 'block';
+        setTimeout(() => errorMsg.style.display = 'none', 4000);
     }
 
-    function hideError() {
-        errorMessage.style.display = "none";
-        errorMessage.textContent = "";
-    }
-
-    function setLoadingState(isLoading) {
-
-        submitBtn.disabled = isLoading;
-
-        if (isLoading) {
-
-            btnText.style.opacity = "0";
-
-            loadingSpinner.style.display = "block";
-
+    // 🔒 VERIFICAR SESIÓN - CLAVE NUEVA
+    const session = localStorage.getItem('inventory_session');
+    if (session) {
+        // SESIÓN VÁLIDA POR 24 HORAS
+        if (Date.now() - parseInt(session) < 24 * 60 * 60 * 1000) {
+            window.location.href = 'index.html';
         } else {
-
-            btnText.style.opacity = "1";
-
-            loadingSpinner.style.display = "none";
-
+            localStorage.removeItem('inventory_session');
         }
-
     }
-
-    function simulateApiCall(user, pass) {
-
-        return new Promise((resolve, reject) => {
-
-            setTimeout(() => {
-
-                const usuarioCorrecto = "empresa";
-                const passwordCorrecta = "empresa1";
-
-                if (user === usuarioCorrecto && pass === passwordCorrecta) {
-
-                    resolve();
-
-                } else {
-
-                    reject(new Error("Usuario o contraseña incorrectos."));
-
-                }
-
-            }, 1200);
-
-        });
-
-    }
-
 });
